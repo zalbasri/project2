@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--<script src="chat.js"></script>-->
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+                var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+                document.querySelector('#display-name').onsubmit = () => {
+                    const name = document.querySelector('#name').value;
+                    localStorage.setItem("name", name);
+                };
+
+                document.querySelector('#display').innerHTML = localStorage.getItem("name");
+
+                socket.on('connect', () => {
+
+                    document.querySelector('#add-channel').onsubmit = () => {
+                        const channel = document.querySelector('#channel').value;
+                    };
+
+                    document.querySelector('#add-message').onsubmit = () => {
+                        const message = document.querySelector('#message').value;
+                    };
+                });
+
+            });
+
+        </script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="jumbotron jumbotron-fluid">
+                    <div class="container">
+                        <h1 class="display-4">CHATBOX</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3">
+
+                    Display name: <span id="display"></span>
+                    <form id="display-name">
+                        <div class="input-group mb-3">
+                            <input type="text" id="name" class="form-control" autocomplete="off" placeholder="enter display name">
+                            <div class="input-group-append">
+                                <input type="submit" class="btn btn-outline-secondary">
+                            </div>
+                        </div>
+
+                    </form>
+
+                    Channels:
+                    <ul id="channels">
+                        {% for channel in channel_list %}
+                            <li>{{ channel }}</li>
+                        {% endfor %}
+                    </ul>
+                    <form id="add-channel" action="{{ url_for('index') }}" method="post">
+                        <div class="input-group mb-3">
+                            <input type="text" id="channel" name="channel" class="form-control" autocomplete="off" placeholder="add a channel">
+                            <div class="input-group-append">
+                                <input type="submit" class="btn btn-outline-secondary">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-9">
+                    <form id="add-message">
+                        <div class="input-group mb-3">
+                            <input type="text" id="message" class="form-control" autocomplete="off" placeholder="type your message">
+                            <div class="input-group-append">
+                                <input type="submit" class="btn btn-outline-secondary">
+                            </div>
+                        </div>
+                        <ul id="messages">
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
