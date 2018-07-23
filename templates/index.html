@@ -8,6 +8,23 @@
 
                 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
+                load_page('general');
+
+                // Set links up to load new pages.
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.onclick = () => {
+                        const page = link.dataset.page;
+                        load_page(page);
+                        return false;
+                    };
+                });
+
+                // Update text on popping state.
+                window.onpopstate = e => {
+                    const data = e.state;
+                    document.title = data.title;
+                };
+
                 document.querySelector('#display-name').onsubmit = () => {
                     const name = document.querySelector('#name').value;
                     localStorage.setItem("name", name);
@@ -27,6 +44,17 @@
                 });
 
             });
+
+            function load_page(name) {
+                const request = new XMLHttpRequest();
+                request.open('GET', `/${name}`);
+                request.onload = () => {
+                    // Push state to URL.
+                    document.title = name;
+                    history.pushState({'title': name}, name, name);//window,browser,browser
+                };
+                request.send();
+            }
 
         </script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
@@ -59,7 +87,7 @@
                     Channels:
                     <ul id="channels">
                         {% for channel in channel_list %}
-                            <li>{{ channel }}</li>
+                            <li><a href="" class="nav-link" data-page={{ "channel" }}>{{ channel }}</a></li>
                         {% endfor %}
                     </ul>
                     <form id="add-channel" action="{{ url_for('index') }}" method="post">
@@ -80,7 +108,7 @@
                                 <input type="submit" class="btn btn-outline-secondary">
                             </div>
                         </div>
-                        <ul id="messages">
+                        <div id="messages">
                         </ul>
                     </form>
                 </div>

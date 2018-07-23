@@ -9,23 +9,17 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # list of all channels
-channel_list = ['general']
+channel_list = {'general':["banana", "apple"]}
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         channel = request.form.get("channel")
-        try:
-            index_value = channel_list.index(channel)
-        except ValueError:
-            index_value = -1
-        if index_value == -1:
-            channel_list.append(channel)
+        if channel not in channel_list.keys():
+            channel_list[channel]=[]
     return render_template('index.html', channel_list=channel_list)
 
+@app.route("/<string:channel>")
+def channel():
+    return channel_list.get(channel)
 
-# @socketio.on("add channel")
-# def add(data):
-#     channel = data["channel"]
-#     channel_list.append(channel)
-#     emit("list channels", channel_list, broadcast=True)
