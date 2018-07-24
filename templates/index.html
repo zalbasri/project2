@@ -8,13 +8,13 @@
 
                 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
-                load_page('general');
 
                 // Set links up to load new pages.
-                document.querySelectorAll('.nav-link').forEach(link => {
+                document.querySelectorAll('.nav-link li a').forEach(link => {
                     link.onclick = () => {
-                        const page = link.dataset.page;
-                        load_page(page);
+                        const page = link.innerHTML;
+                        localStorage.setItem("page", page);
+                        //load_page(page);
                         return false;
                     };
                 });
@@ -28,6 +28,8 @@
                 document.querySelector('#display-name').onsubmit = () => {
                     const name = document.querySelector('#name').value;
                     localStorage.setItem("name", name);
+                    // document.querySelector('#name').value = ""; if you wanna put that use socket or something
+                    // return false;
                 };
 
                 document.querySelector('#display').innerHTML = localStorage.getItem("name");
@@ -35,13 +37,37 @@
                 socket.on('connect', () => {
 
                     document.querySelector('#add-channel').onsubmit = () => {
-                        const channel = document.querySelector('#channel').value;
+                        var channel = document.querySelector('#channel').value;
+                        if (channel.length == 0 || channel === ' ')
+                            return false;
+                        socket.emit('submit channel', {'channel': channel});
+                        document.querySelector('#channel').value = "";
+                        return false;
                     };
 
                     document.querySelector('#add-message').onsubmit = () => {
-                        const message = document.querySelector('#message').value;
+                        var message = document.querySelector('#message').value;
+                        if (message.length == 0 || message === ' ')
+                            return false;
+                        message = localStorage.getItem("name") + ": " + message;
+                        socket.emit('submit message', {'message': message});
+                        document.querySelector('#message').value = "";
+                        return false;
                     };
                 });
+
+                socket.on('announce channel', data => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="">${data.channel}</a>`;
+                    document.querySelector('#channels').append(li);
+                });
+
+                socket.on('announce message', data => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${data.message}`;
+                    document.querySelector('#messages').append(li);
+                });
+
 
             });
 
@@ -85,12 +111,12 @@
                     </form>
 
                     Channels:
-                    <ul id="channels">
+                    <ul id="channels" class="nav-link">
                         {% for channel in channel_list %}
-                            <li><a href="" class="nav-link" data-page={{ "channel" }}>{{ channel }}</a></li>
+                            <li><a href="">{{ channel }}</a></li>
                         {% endfor %}
                     </ul>
-                    <form id="add-channel" action="{{ url_for('index') }}" method="post">
+                    <form id="add-channel">
                         <div class="input-group mb-3">
                             <input type="text" id="channel" name="channel" class="form-control" autocomplete="off" placeholder="add a channel">
                             <div class="input-group-append">
