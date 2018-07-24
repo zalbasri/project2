@@ -1,131 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<script src="chat.js"></script>-->
+        <script src="{{ url_for('static', filename='index.js') }}"></script>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+        integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-
-                var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-
-                if (localStorage.getItem("page") == null)
-                    localStorage.setItem("page", "general");
-
-
-                document.querySelector('#display-name').onsubmit = () => {
-                    const name = document.querySelector('#name').value;
-                    localStorage.setItem("name", name);
-                    // document.querySelector('#name').value = ""; if you wanna put that use socket or something
-                    // return false;
+                // change the color of the messages based on user selection
+                document.querySelector('#color-change').onchange = function() {
+                    document.querySelector('body').style.background = this.value;
                 };
-
-                document.querySelector('#display').innerHTML = localStorage.getItem("name");
-
-                socket.on('connect', () => {
-
-                    // Set links up to load new pages.
-                    document.querySelectorAll('.nav-link li a').forEach(link => {
-                        link.onclick = () => {
-                            const page = link.innerHTML;
-                            localStorage.setItem("page", page);
-                            socket.emit('current page', {'page': page});
-                            return false;
-                        };
-                    });
-
-                    document.querySelector('#current_page').innerHTML = localStorage.getItem("page");
-
-
-                    document.querySelector('#add-channel').onsubmit = () => {
-                        var channel = document.querySelector('#channel').value;
-                        if (channel.length == 0 || channel === ' ')
-                            return false;
-                        socket.emit('submit channel', {'channel': channel});
-                        document.querySelector('#channel').value = "";
-                        return false;
-                    };
-
-                    document.querySelector('#add-message').onsubmit = () => {
-                        var message = document.querySelector('#message').value;
-                        var channel = localStorage.getItem("page");
-                        if (message.length == 0 || message === ' ')
-                            return false;
-                        message = localStorage.getItem("name") + ": " + message;
-                        socket.emit('submit message', {'message': message, 'channel': channel});
-                        document.querySelector('#message').value = "";
-                        return false;
-                    };
-
-
-                    // If scrolled to bottom, load the next 20 posts.
-                    window.onscroll = () => {
-                        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-                            load();
-                        }
-                    };
-
-
-
-                });
-
-                socket.on('announce channel', data => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="">${data.channel}</a>`;
-                    document.querySelector('#channels').append(li);
-                });
-
-                socket.on('announce message', data => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${data.message}`;
-                    document.querySelector('#messages').append(li);
-                });
-
-                socket.on('current page', data => {
-                    document.querySelector('#current_page').innerHTML = data.current_page;
-                });
-
-                // Start with first post.
-                let counter = 1;
-
-                // Load posts 20 at a time.
-                const quantity = 20;
-
-
-                // Load next set of posts.
-                function load() {
-
-                    // Set start and end post numbers, and update counter.
-                    const start = counter;
-                    const end = start + quantity - 1;
-                    counter = end + 1;
-
-                    // Open new request to get new posts.
-                    const request = new XMLHttpRequest();
-                    request.open('POST', '/messages');
-                    request.onload = () => {
-                        const data = JSON.parse(request.responseText);
-                        data.forEach(add_post);
-                    };
-
-                    // Add start and end points to request data.
-                    const data = new FormData();
-                    data.append('start', start);
-                    data.append('end', end);
-
-                    // Send request.
-                    request.send(data);
-                };
-
-                function add_post(contents) {
-                    const li = document.createElement('li');
-                    li.innerHTML = contents;
-                    document.querySelector('#messages').append(li);
-                }
-
             });
-
         </script>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     </head>
 
     <body>
@@ -167,6 +54,13 @@
                             </div>
                         </div>
                     </form>
+                    Change background color:
+                    <select id="color-change">
+                        <option value="white">White</option>
+                        <option value="black">Black</option>
+                        <option value="red">Red</option>
+                        <option value="blue">Blue</option>
+                    </select>
                 </div>
 
                 <div class="col-9">
